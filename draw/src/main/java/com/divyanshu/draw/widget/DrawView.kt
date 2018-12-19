@@ -103,6 +103,13 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return bitmap
     }
 
+    fun getBitmapIfModifided(): Bitmap? {
+        if (mPaths.isEmpty()) {
+            return null
+        }
+        return getBitmap()
+    }
+
     fun addPath(path: MyPath, options: PaintOptions) {
         mPaths[path] = options
     }

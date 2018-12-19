@@ -25,9 +25,10 @@ class DrawingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_drawing)
 
         image_close_drawing.setOnClickListener {
-            finish()
+            super.finish()
+            overridePendingTransition(0, R.anim.slide_discard)
         }
-        fab_send_drawing.setOnClickListener {
+        image_done_drawing.setOnClickListener {
             val bStream = ByteArrayOutputStream()
             val bitmap = draw_view.getBitmap()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
