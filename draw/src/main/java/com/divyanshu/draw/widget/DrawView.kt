@@ -1,6 +1,7 @@
 package com.divyanshu.draw.widget
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.*
 import android.support.annotation.ColorInt
 import android.support.v4.graphics.ColorUtils
@@ -10,6 +11,12 @@ import android.view.View
 import java.util.LinkedHashMap
 
 class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
+    private val LIB_NAME = "com.divyanshu.androiddraw"
+    private val UID = "069e4deb-69e5-405b-ac3c-8031629d3260"
+    private val COLOR_KEY = "COLOR_KEY"
+    private val STROKE_WIDTH_KEY = "STROKE_WIDTH_KEY"
+    private val ALPHA_KEY = "ALPHA_KEY"
+
     private var mPaths = LinkedHashMap<MyPath, PaintOptions>()
 
     private var mLastPaths = LinkedHashMap<MyPath, PaintOptions>()
@@ -30,6 +37,8 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         private set
 
     init {
+        loadPaintOptions()
+
         mPaint.apply {
             color = mPaintOptions.color
             style = Paint.Style.STROKE
@@ -38,6 +47,33 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             strokeWidth = mPaintOptions.strokeWidth
             isAntiAlias = true
         }
+    }
+
+    private fun p(context: Context): SharedPreferences {
+        /*
+         * Always use application context.
+         */
+        return context.applicationContext.getSharedPreferences(genPreferenceFilename(), Context.MODE_PRIVATE)
+    }
+
+    private fun genPreferenceFilename(): String {
+        return String.format("%s_%s", LIB_NAME, UID)
+    }
+
+    private fun loadPaintOptions() {
+        val p = p(context)
+        mPaintOptions.color = p.getInt(COLOR_KEY, Color.BLACK)
+        mPaintOptions.strokeWidth = p.getFloat(STROKE_WIDTH_KEY, 8f)
+        mPaintOptions.alpha = p.getInt(ALPHA_KEY, 255)
+    }
+
+    fun savePaintOptions() {
+        val p = p(context)
+        val e = p.edit()
+        e.putInt(COLOR_KEY, mPaintOptions.color)
+        e.putFloat(STROKE_WIDTH_KEY, mPaintOptions.strokeWidth)
+        e.putInt(ALPHA_KEY, mPaintOptions.alpha)
+        e.apply()
     }
 
     fun undo() {
@@ -71,6 +107,10 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         invalidate()
     }
 
+    fun getColor(): Int {
+        return mPaintOptions.color
+    }
+
     fun setColor(newColor: Int) {
         @ColorInt
         val alphaColor = ColorUtils.setAlphaComponent(newColor, mPaintOptions.alpha)
@@ -80,10 +120,18 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
-    fun setAlpha(newAlpha: Int) {
-        val alpha = (newAlpha*255)/100
+    fun getAlphaAsProgress(): Int {
+        return (mPaintOptions.alpha*100)/255
+    }
+
+    fun setAlpha(progress: Int) {
+        val alpha = (progress*255)/100
         mPaintOptions.alpha = alpha
         setColor(mPaintOptions.color)
+    }
+
+    fun getStrokeWidth(): Float {
+        return mPaintOptions.strokeWidth
     }
 
     fun setStrokeWidth(newStrokeWidth: Float) {
@@ -103,7 +151,7 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return bitmap
     }
 
-    fun getBitmapIfModifided(): Bitmap? {
+    fun getBitmapIfModified(): Bitmap? {
         if (mPaths.isEmpty()) {
             return null
         }
