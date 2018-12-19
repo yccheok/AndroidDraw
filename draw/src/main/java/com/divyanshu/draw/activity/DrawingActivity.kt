@@ -2,23 +2,39 @@ package com.divyanshu.draw.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.content.res.ResourcesCompat
-import android.support.v4.widget.ImageViewCompat
-import android.util.Log
+import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import com.divyanshu.draw.R
-import com.divyanshu.draw.widget.DrawView
 import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
 import java.io.ByteArrayOutputStream
 
 class DrawingActivity : AppCompatActivity() {
+    companion object {
+        @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
+    }
+
+    override fun finish() {
+        val bitmap = draw_view.getBitmapIfModified()
+
+        if (bitmap != null) {
+            val bStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
+            val byteArray = bStream.toByteArray()
+            val returnIntent = Intent()
+            returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
+            setResult(Activity.RESULT_OK,returnIntent)
+        }
+
+        draw_view.savePaintOptions()
+
+        super.finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,14 +44,8 @@ class DrawingActivity : AppCompatActivity() {
             super.finish()
             overridePendingTransition(0, R.anim.slide_discard)
         }
+
         image_done_drawing.setOnClickListener {
-            val bStream = ByteArrayOutputStream()
-            val bitmap = draw_view.getBitmap()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
-            val byteArray = bStream.toByteArray()
-            val returnIntent = Intent()
-            returnIntent.putExtra("bitmap", byteArray)
-            setResult(Activity.RESULT_OK,returnIntent)
             finish()
         }
 
@@ -114,55 +124,77 @@ class DrawingActivity : AppCompatActivity() {
         }
     }
 
+    private fun getColorCompat(colorResourceId: Int): Int {
+        return ResourcesCompat.getColor(resources, colorResourceId,null)
+    }
+
     private fun colorSelector() {
         image_color_black.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_black,null)
+            val color = getColorCompat(R.color.color_black)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_black)
         }
         image_color_red.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_red,null)
+            val color = getColorCompat(R.color.color_red)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_red)
         }
         image_color_yellow.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_yellow,null)
+            val color = getColorCompat(R.color.color_yellow)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_yellow)
         }
         image_color_green.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_green,null)
+            val color = getColorCompat(R.color.color_green)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_green)
         }
         image_color_blue.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_blue,null)
+            val color = getColorCompat(R.color.color_blue)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_blue)
         }
         image_color_pink.setOnClickListener {
-            val color = ResourcesCompat.getColor(resources, R.color.color_pink,null)
+            val color = getColorCompat(R.color.color_pink)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_pink)
         }
         image_color_brown.setOnClickListener {
-            val color =  ResourcesCompat.getColor(resources, R.color.color_brown,null)
+            val color =  getColorCompat(R.color.color_brown)
             draw_view.setColor(color)
             circle_view_opacity.setColor(color)
             circle_view_width.setColor(color)
             scaleColorView(image_color_brown)
+        }
+
+        // Set alpha component to 0xFF.
+        val color = draw_view.getColor() or (0xFF_00_00_00).toInt()
+        if (color == getColorCompat(R.color.color_black)) {
+            image_color_black.performClick()
+        } else if (color == getColorCompat(R.color.color_red)) {
+            image_color_red.performClick()
+        } else if (color == getColorCompat(R.color.color_yellow)) {
+            image_color_yellow.performClick()
+        } else if (color == getColorCompat(R.color.color_green)) {
+            image_color_green.performClick()
+        } else if (color == getColorCompat(R.color.color_blue)) {
+            image_color_blue.performClick()
+        } else if (color == getColorCompat(R.color.color_pink)) {
+            image_color_pink.performClick()
+        } else if (color == getColorCompat(R.color.color_brown)) {
+            image_color_brown.performClick()
         }
     }
 
@@ -205,6 +237,8 @@ class DrawingActivity : AppCompatActivity() {
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+
+        seekBar_width.progress = draw_view.getStrokeWidth().toInt()
     }
 
     private fun setPaintAlpha() {
@@ -218,6 +252,8 @@ class DrawingActivity : AppCompatActivity() {
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+
+        seekBar_opacity.progress = draw_view.getAlphaAsProgress()
     }
 
     private val Int.toPx: Float
