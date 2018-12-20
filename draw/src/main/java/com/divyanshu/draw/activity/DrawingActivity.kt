@@ -62,8 +62,11 @@ class DrawingActivity : AppCompatActivity() {
         circle_view_opacity.setCircleRadius(100f)
         image_draw_eraser.setOnClickListener {
             draw_view.toggleEraser()
-            image_draw_eraser.isSelected = draw_view.isEraserOn
             toggleDrawTools(draw_tools,false)
+            image_draw_eraser.isSelected = draw_view.isEraserOn
+            image_draw_width.isSelected = false
+            image_draw_opacity.isSelected = false
+            image_draw_color.isSelected = false
         }
         image_draw_eraser.setOnLongClickListener {
             draw_view.clearCanvas()
@@ -71,11 +74,20 @@ class DrawingActivity : AppCompatActivity() {
             true
         }
         image_draw_width.setOnClickListener {
+            var showView = true
             if (draw_tools.translationY == (56).toPx){
-                toggleDrawTools(draw_tools,true)
+                showView = true
             }else if (draw_tools.translationY == (0).toPx && seekBar_width.visibility == View.VISIBLE){
-                toggleDrawTools(draw_tools,false)
+                showView = false
             }
+
+            draw_view.offEraser()
+            toggleDrawTools(draw_tools, showView)
+            image_draw_eraser.isSelected = false
+            image_draw_width.isSelected = showView
+            image_draw_opacity.isSelected = false
+            image_draw_color.isSelected = false
+
             circle_view_width.visibility = View.VISIBLE
             circle_view_opacity.visibility = View.GONE
             seekBar_width.visibility = View.VISIBLE
@@ -83,11 +95,20 @@ class DrawingActivity : AppCompatActivity() {
             draw_color_palette.visibility = View.GONE
         }
         image_draw_opacity.setOnClickListener {
+            var showView = true
             if (draw_tools.translationY == (56).toPx){
-                toggleDrawTools(draw_tools,true)
+                showView = true
             }else if (draw_tools.translationY == (0).toPx && seekBar_opacity.visibility == View.VISIBLE){
-                toggleDrawTools(draw_tools,false)
+                showView = false
             }
+
+            draw_view.offEraser()
+            toggleDrawTools(draw_tools, showView)
+            image_draw_eraser.isSelected = false
+            image_draw_width.isSelected = false
+            image_draw_opacity.isSelected = showView
+            image_draw_color.isSelected = false
+            
             circle_view_width.visibility = View.GONE
             circle_view_opacity.visibility = View.VISIBLE
             seekBar_width.visibility = View.GONE
@@ -95,11 +116,20 @@ class DrawingActivity : AppCompatActivity() {
             draw_color_palette.visibility = View.GONE
         }
         image_draw_color.setOnClickListener {
+            var showView = true
             if (draw_tools.translationY == (56).toPx){
-                toggleDrawTools(draw_tools,true)
+                showView = true
             }else if (draw_tools.translationY == (0).toPx && draw_color_palette.visibility == View.VISIBLE){
-                toggleDrawTools(draw_tools,false)
+                showView = false
             }
+
+            draw_view.offEraser()
+            toggleDrawTools(draw_tools, showView)
+            image_draw_eraser.isSelected = false
+            image_draw_width.isSelected = false
+            image_draw_opacity.isSelected = false
+            image_draw_color.isSelected = showView
+            
             circle_view_width.visibility = View.GONE
             circle_view_opacity.visibility = View.GONE
             seekBar_width.visibility = View.GONE

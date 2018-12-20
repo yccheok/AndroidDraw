@@ -239,4 +239,9 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         invalidate()
     }
 
+    fun offEraser() {
+        isEraserOn = false
+        mPaintOptions.isEraserOn = isEraserOn
+        invalidate()
+    }
 }
