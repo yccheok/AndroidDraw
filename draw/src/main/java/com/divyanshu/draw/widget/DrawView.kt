@@ -33,6 +33,12 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mIsSaving = false
     private var mIsStrokeWidthBarEnabled = false
 
+    var backgroundBitmap: Bitmap? = null
+        set(value) {
+            field = value
+            invalidate()
+        }
+
     var isEraserOn = false
         private set
 
@@ -164,6 +170,12 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        if (backgroundBitmap != null) {
+            // Reset alpha value.
+            mPaint.alpha = 255
+            canvas.drawBitmap(backgroundBitmap, 0f, 0f, mPaint)
+        }
 
         for ((key, value) in mPaths) {
             changePaint(value)

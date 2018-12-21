@@ -25,7 +25,8 @@ class DrawingActivity : AppCompatActivity() {
     }
 
     private inner class BitmapObserver : Observer<Bitmap> {
-        override fun onChanged(notes: Bitmap?) {
+        override fun onChanged(bitmap: Bitmap?) {
+            draw_view.backgroundBitmap = bitmap
         }
     }
 
