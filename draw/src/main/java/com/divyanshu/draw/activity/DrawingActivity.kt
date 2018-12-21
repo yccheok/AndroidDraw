@@ -1,6 +1,8 @@
 package com.divyanshu.draw.activity
 
+import android.arch.lifecycle.ViewModelProviders
 import android.app.Activity
+import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -10,6 +12,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import com.divyanshu.draw.R
+import com.divyanshu.draw.model.DrawingViewModel
+import com.divyanshu.draw.model.DrawingViewModelFactory
 import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
 import java.io.ByteArrayOutputStream
@@ -17,7 +21,16 @@ import java.io.ByteArrayOutputStream
 class DrawingActivity : AppCompatActivity() {
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
+        @JvmField val INTENT_EXTRA_FILEPATH = "INTENT_EXTRA_FILEPATH"
     }
+
+    private inner class BitmapObserver : Observer<Bitmap> {
+        override fun onChanged(notes: Bitmap?) {
+        }
+    }
+
+    private lateinit var drawingViewModel: DrawingViewModel
+    private val bitmapObserver = BitmapObserver()
 
     override fun finish() {
         val bitmap = draw_view.getBitmapIfModified()
@@ -38,7 +51,18 @@ class DrawingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_drawing)
+
+        val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
+        if (filepath != null) {
+            drawingViewModel = ViewModelProviders.of(
+                    this,
+                    DrawingViewModelFactory(filepath)
+            ).get(DrawingViewModel::class.java)
+
+            drawingViewModel.bitmapLiveData.observe(this, bitmapObserver)
+        }
 
         image_close_drawing.setOnClickListener {
             super.finish()

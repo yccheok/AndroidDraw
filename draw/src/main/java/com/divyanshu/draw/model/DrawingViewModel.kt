@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.util.concurrent.Executors
 
-class DrawingViewModel(val filepath:String): ViewModel() {
+class DrawingViewModel(private val filepath: String): ViewModel() {
     private val executor = Executors.newSingleThreadExecutor()
     val bitmapLiveData: MutableLiveData<Bitmap> = MutableLiveData()
 
