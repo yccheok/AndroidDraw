@@ -1,6 +1,9 @@
 package com.divyanshu.draw.activity
 
+import android.arch.lifecycle.ViewModelProviders
 import android.app.Activity
+import android.arch.lifecycle.Observer
+import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -10,6 +13,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import com.divyanshu.draw.R
+import com.divyanshu.draw.model.DrawingViewModel
+import com.divyanshu.draw.model.DrawingViewModelFactory
 import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
 import java.io.ByteArrayOutputStream
@@ -17,7 +22,31 @@ import java.io.ByteArrayOutputStream
 class DrawingActivity : AppCompatActivity() {
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
+        @JvmField val INTENT_EXTRA_FILEPATH = "INTENT_EXTRA_FILEPATH"
+
+        @JvmStatic
+        fun isSupported(context: Context, width: Int, height: Int): Boolean {
+            val resources = context.resources
+            val w = resources.getDisplayMetrics().widthPixels;
+            val h = resources.getDisplayMetrics().heightPixels;
+            val resource = resources.getIdentifier("status_bar_height", "dimen", "android")
+            var statusBarHeight = 0
+            if (resource > 0) {
+                statusBarHeight = context.resources.getDimensionPixelSize(resource)
+            }
+
+            return (width == w && height == (h - statusBarHeight)) || (width == (h - statusBarHeight) && height == w)
+        }
     }
+
+    private inner class BitmapObserver : Observer<Bitmap> {
+        override fun onChanged(bitmap: Bitmap?) {
+            draw_view.backgroundBitmap = bitmap
+        }
+    }
+
+    private lateinit var drawingViewModel: DrawingViewModel
+    private val bitmapObserver = BitmapObserver()
 
     override fun finish() {
         val bitmap = draw_view.getBitmapIfModified()
@@ -28,7 +57,11 @@ class DrawingActivity : AppCompatActivity() {
             val byteArray = bStream.toByteArray()
             val returnIntent = Intent()
             returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-            setResult(Activity.RESULT_OK,returnIntent)
+            val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
+            if (filepath != null) {
+                returnIntent.putExtra(INTENT_EXTRA_FILEPATH, filepath)
+            }
+            setResult(Activity.RESULT_OK, returnIntent)
         }
 
         draw_view.savePaintOptions()
@@ -38,7 +71,18 @@ class DrawingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_drawing)
+
+        val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
+        if (filepath != null) {
+            drawingViewModel = ViewModelProviders.of(
+                    this,
+                    DrawingViewModelFactory(filepath)
+            ).get(DrawingViewModel::class.java)
+
+            drawingViewModel.bitmapLiveData.observe(this, bitmapObserver)
+        }
 
         image_close_drawing.setOnClickListener {
             super.finish()

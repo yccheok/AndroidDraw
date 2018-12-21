@@ -7,8 +7,11 @@ import android.support.annotation.ColorInt
 import android.support.v4.graphics.ColorUtils
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.Surface
 import android.view.View
-import java.util.LinkedHashMap
+import android.view.WindowManager
+import java.util.*
+
 
 class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private val LIB_NAME = "com.divyanshu.androiddraw"
@@ -33,6 +36,33 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mIsSaving = false
     private var mIsStrokeWidthBarEnabled = false
 
+    var backgroundBitmap: Bitmap? = null
+        set(value) {
+            if (value == null) {
+                field = value
+                invalidate()
+                return
+            }
+
+            val isRotateRequired = isRotateRequired(context, value.width, value.height)
+
+            if (isRotateRequired) {
+                val matrix = Matrix()
+
+                val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+                val rotation = display.rotation
+                if (rotation == Surface.ROTATION_270) {
+                    matrix.postRotate(90f)
+                } else {
+                    matrix.postRotate(-90f)
+                }
+                field = Bitmap.createBitmap(value, 0, 0, value.width, value.height, matrix, true)
+            } else {
+                field = value
+            }
+            invalidate()
+        }
+
     var isEraserOn = false
         private set
 
@@ -49,6 +79,23 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
+    private fun isRotateRequired(context: Context, width: Int, height: Int): Boolean {
+        val resources = context.resources
+        val w = resources.getDisplayMetrics().widthPixels;
+        val h = resources.getDisplayMetrics().heightPixels;
+        val resource = resources.getIdentifier("status_bar_height", "dimen", "android")
+        var statusBarHeight = 0
+        if (resource > 0) {
+            statusBarHeight = context.resources.getDimensionPixelSize(resource)
+        }
+
+        if (width == w && height == (h - statusBarHeight)) {
+            return false
+        }
+
+        return true
+    }
+    
     private fun p(context: Context): SharedPreferences {
         /*
          * Always use application context.
@@ -164,6 +211,12 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        if (backgroundBitmap != null) {
+            // Reset alpha value.
+            mPaint.alpha = 255
+            canvas.drawBitmap(backgroundBitmap, 0f, 0f, mPaint)
+        }
 
         for ((key, value) in mPaths) {
             changePaint(value)
