@@ -57,7 +57,11 @@ class DrawingActivity : AppCompatActivity() {
             val byteArray = bStream.toByteArray()
             val returnIntent = Intent()
             returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-            setResult(Activity.RESULT_OK,returnIntent)
+            val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
+            if (filepath != null) {
+                returnIntent.putExtra(INTENT_EXTRA_FILEPATH, filepath)
+            }
+            setResult(Activity.RESULT_OK, returnIntent)
         }
 
         draw_view.savePaintOptions()
