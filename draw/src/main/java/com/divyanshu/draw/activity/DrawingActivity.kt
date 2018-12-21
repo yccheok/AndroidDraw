@@ -3,6 +3,7 @@ package com.divyanshu.draw.activity
 import android.arch.lifecycle.ViewModelProviders
 import android.app.Activity
 import android.arch.lifecycle.Observer
+import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -22,6 +23,20 @@ class DrawingActivity : AppCompatActivity() {
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
         @JvmField val INTENT_EXTRA_FILEPATH = "INTENT_EXTRA_FILEPATH"
+
+        @JvmStatic
+        fun isSupported(context: Context, width: Int, height: Int): Boolean {
+            val resources = context.resources
+            val w = resources.getDisplayMetrics().widthPixels;
+            val h = resources.getDisplayMetrics().heightPixels;
+            val resource = resources.getIdentifier("status_bar_height", "dimen", "android")
+            var statusBarHeight = 0
+            if (resource > 0) {
+                statusBarHeight = context.resources.getDimensionPixelSize(resource)
+            }
+
+            return (width == w && height == (h - statusBarHeight)) || (width == (h - statusBarHeight) && height == w)
+        }
     }
 
     private inner class BitmapObserver : Observer<Bitmap> {
