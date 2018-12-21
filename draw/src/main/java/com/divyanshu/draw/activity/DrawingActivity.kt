@@ -35,7 +35,7 @@ class DrawingActivity : AppCompatActivity() {
                 statusBarHeight = context.resources.getDimensionPixelSize(resource)
             }
 
-            return (width == w && height == (h - statusBarHeight)) || (width == (h - statusBarHeight) && height == w)
+            return (width == w && height == (h - statusBarHeight)) || (width == h && height == (w - statusBarHeight))
         }
     }
 
