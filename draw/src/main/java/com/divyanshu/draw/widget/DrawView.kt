@@ -56,11 +56,11 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 val rotation = display.rotation
                 if (rotation == Surface.ROTATION_270) {
                     mRotateAngle = 90f
-                    matrix.postRotate(rotateAngle)
+                    matrix.postRotate(mRotateAngle)
 
                 } else {
                     mRotateAngle = -90f
-                    matrix.postRotate(rotateAngle)
+                    matrix.postRotate(mRotateAngle)
                 }
                 field = Bitmap.createBitmap(value, 0, 0, value.width, value.height, matrix, true)
             } else {
