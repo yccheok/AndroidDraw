@@ -36,10 +36,13 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mIsSaving = false
     private var mIsStrokeWidthBarEnabled = false
 
+    private var mRotateAngle = 0f
+    
     var backgroundBitmap: Bitmap? = null
         set(value) {
             if (value == null) {
                 field = value
+                mRotateAngle = 0f
                 invalidate()
                 return
             }
@@ -52,13 +55,17 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
                 val rotation = display.rotation
                 if (rotation == Surface.ROTATION_270) {
-                    matrix.postRotate(90f)
+                    mRotateAngle = 90f
+                    matrix.postRotate(rotateAngle)
+
                 } else {
-                    matrix.postRotate(-90f)
+                    mRotateAngle = -90f
+                    matrix.postRotate(rotateAngle)
                 }
                 field = Bitmap.createBitmap(value, 0, 0, value.width, value.height, matrix, true)
             } else {
                 field = value
+                mRotateAngle = 0f
             }
             invalidate()
         }
@@ -202,7 +209,15 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         if (mPaths.isEmpty()) {
             return null
         }
-        return getBitmap()
+        
+        var bitmap = getBitmap()
+        if (mRotateAngle == 0f) {
+            return bitmap
+        }
+
+        val matrix = Matrix()
+        matrix.postRotate(-mRotateAngle)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     fun addPath(path: MyPath, options: PaintOptions) {
