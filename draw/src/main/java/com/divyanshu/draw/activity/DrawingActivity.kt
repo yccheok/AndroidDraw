@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream
 class DrawingActivity : AppCompatActivity() {
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
-        @JvmField val INTENT_EXTRA_FILEPATH = "INTENT_EXTRA_FILEPATH"
+        @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
 
         @JvmStatic
         fun isSupported(context: Context, width: Int, height: Int): Boolean {
@@ -51,9 +51,9 @@ class DrawingActivity : AppCompatActivity() {
             val byteArray = bStream.toByteArray()
             val returnIntent = Intent()
             returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-            val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
-            if (filepath != null) {
-                returnIntent.putExtra(INTENT_EXTRA_FILEPATH, filepath)
+            val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
+            if (originalFilepath != null) {
+                returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
             }
             setResult(Activity.RESULT_OK, returnIntent)
         }
@@ -68,11 +68,11 @@ class DrawingActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_drawing)
 
-        val filepath = intent.getStringExtra(INTENT_EXTRA_FILEPATH);
-        if (filepath != null) {
+        val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
+        if (originalFilepath != null) {
             drawingViewModel = ViewModelProviders.of(
                     this,
-                    DrawingViewModelFactory(filepath)
+                    DrawingViewModelFactory(originalFilepath)
             ).get(DrawingViewModel::class.java)
 
             drawingViewModel.bitmapLiveData.observe(this, bitmapObserver)
