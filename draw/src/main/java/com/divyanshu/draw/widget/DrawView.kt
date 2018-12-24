@@ -26,6 +26,7 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mUndonePaths = LinkedHashMap<MyPath, PaintOptions>()
 
     private var mPaint = Paint()
+    private var mPaintForGetBitmap = Paint()
     private var mPath = MyPath()
     private var mPaintOptions = PaintOptions()
 
@@ -33,7 +34,6 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mCurY = 0f
     private var mStartX = 0f
     private var mStartY = 0f
-    private var mIsSaving = false
     private var mIsStrokeWidthBarEnabled = false
 
     private var mRotateAngle = 0f
@@ -190,25 +190,45 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
+    // TODO: https://stackoverflow.com/questions/53909032/optimized-way-to-perform-canvas-draw-on-child-region-of-a-master-bitmap
     private fun getBitmap(): Bitmap {
         val resources = context.resources
         val screenWidth = resources.getDisplayMetrics().widthPixels;
         val screenHeight = resources.getDisplayMetrics().heightPixels;
+
+        // Creating a larger master bitmap.
         val masterBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888)
         val masterCanvas = Canvas(masterBitmap)
         masterCanvas.drawColor(Color.WHITE)
-        val bitmap = Bitmap.createBitmap(
+
+        // Creating a smaller child bitmap.
+        val childBitmap = Bitmap.createBitmap(
                 masterBitmap,
                 (screenWidth-width) shr 1,
                 (screenHeight-height) shr 1,
                 width,
                 height
         )
-        val canvas = Canvas(bitmap)
-        mIsSaving = true
-        draw(canvas)
-        mIsSaving = false
-        return bitmap
+
+        // Perform drawing on smaller child bitmap.
+        val childCanvas = Canvas(childBitmap)
+        draw(childCanvas)
+
+        // Copy the smaller child bitmap back to larger master bitmap.
+        masterCanvas.drawBitmap(
+                childBitmap,
+                ((screenWidth-width) shr 1).toFloat(),
+                ((screenHeight-height) shr 1).toFloat(),
+                mPaintForGetBitmap
+        )
+
+        if (mRotateAngle == 0f) {
+            return masterBitmap
+        }
+
+        val matrix = Matrix()
+        matrix.postRotate(-mRotateAngle)
+        return Bitmap.createBitmap(masterBitmap, 0, 0, masterBitmap.width, masterBitmap.height, matrix, true)
     }
 
     fun getRotatedBitmapIfModified(): Bitmap? {
@@ -217,13 +237,7 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
         
         var bitmap = getBitmap()
-        if (mRotateAngle == 0f) {
-            return bitmap
-        }
-
-        val matrix = Matrix()
-        matrix.postRotate(-mRotateAngle)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        return bitmap
     }
 
     fun addPath(path: MyPath, options: PaintOptions) {
