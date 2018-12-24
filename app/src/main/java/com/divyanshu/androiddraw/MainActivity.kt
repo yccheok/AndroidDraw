@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         if (data != null && resultCode == Activity.RESULT_OK) {
             when(requestCode){
                 REQUEST_CODE_DRAW -> {
-                    val result= data.getByteArrayExtra("bitmap")
+                    val result= data.getByteArrayExtra(DrawingActivity.INTENT_EXTRA_BITMAP)
                     val bitmap = BitmapFactory.decodeByteArray(result, 0, result.size)
                     showSaveDialog(bitmap)
                 }
