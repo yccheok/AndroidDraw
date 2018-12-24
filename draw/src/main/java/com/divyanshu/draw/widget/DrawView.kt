@@ -37,6 +37,8 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var mIsStrokeWidthBarEnabled = false
 
     private var mRotateAngle = 0f
+
+    private var mCroppedBackgroundBitmap: Bitmap? = null
     
     var backgroundBitmap: Bitmap? = null
         set(value) {
@@ -90,16 +92,9 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         val resources = context.resources
         val w = resources.getDisplayMetrics().widthPixels;
         val h = resources.getDisplayMetrics().heightPixels;
-        val resource = resources.getIdentifier("status_bar_height", "dimen", "android")
-        var statusBarHeight = 0
-        if (resource > 0) {
-            statusBarHeight = context.resources.getDimensionPixelSize(resource)
-        }
-
-        if (width == w && height == (h - statusBarHeight)) {
+        if (width == w && height == h) {
             return false
         }
-
         return true
     }
     
@@ -195,17 +190,28 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
-    fun getBitmap(): Bitmap {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    private fun getBitmap(): Bitmap {
+        val resources = context.resources
+        val screenWidth = resources.getDisplayMetrics().widthPixels;
+        val screenHeight = resources.getDisplayMetrics().heightPixels;
+        val masterBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888)
+        val masterCanvas = Canvas(masterBitmap)
+        masterCanvas.drawColor(Color.WHITE)
+        val bitmap = Bitmap.createBitmap(
+                masterBitmap,
+                (screenWidth-width) shr 1,
+                (screenHeight-height) shr 1,
+                width,
+                height
+        )
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
         mIsSaving = true
         draw(canvas)
         mIsSaving = false
         return bitmap
     }
 
-    fun getBitmapIfModified(): Bitmap? {
+    fun getRotatedBitmapIfModified(): Bitmap? {
         if (mPaths.isEmpty()) {
             return null
         }
@@ -228,9 +234,24 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         super.onDraw(canvas)
 
         if (backgroundBitmap != null) {
-            // Reset alpha value.
-            mPaint.alpha = 255
-            canvas.drawBitmap(backgroundBitmap, 0f, 0f, mPaint)
+            if (mCroppedBackgroundBitmap == null) {
+                val bitmap = backgroundBitmap;
+                if (bitmap != null) {
+                    mCroppedBackgroundBitmap = Bitmap.createBitmap(
+                            bitmap,
+                            (bitmap.width - width) shr 1,
+                            (bitmap.height - height) shr 1,
+                            width,
+                            height
+                    )
+                }
+            }
+
+            if (mCroppedBackgroundBitmap != null) {
+                // Reset alpha value.
+                mPaint.alpha = 255
+                canvas.drawBitmap(mCroppedBackgroundBitmap, 0f, 0f, mPaint)
+            }
         }
 
         for ((key, value) in mPaths) {

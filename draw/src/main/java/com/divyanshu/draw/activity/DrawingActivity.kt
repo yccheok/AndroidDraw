@@ -29,13 +29,7 @@ class DrawingActivity : AppCompatActivity() {
             val resources = context.resources
             val w = resources.getDisplayMetrics().widthPixels;
             val h = resources.getDisplayMetrics().heightPixels;
-            val resource = resources.getIdentifier("status_bar_height", "dimen", "android")
-            var statusBarHeight = 0
-            if (resource > 0) {
-                statusBarHeight = context.resources.getDimensionPixelSize(resource)
-            }
-
-            return (width == w && height == (h - statusBarHeight)) || (width == h && height == (w - statusBarHeight))
+            return (width == w && height == h) || (width == h && height == w)
         }
     }
 
@@ -49,7 +43,7 @@ class DrawingActivity : AppCompatActivity() {
     private val bitmapObserver = BitmapObserver()
 
     override fun finish() {
-        val bitmap = draw_view.getBitmapIfModified()
+        val bitmap = draw_view.getRotatedBitmapIfModified()
 
         if (bitmap != null) {
             val bStream = ByteArrayOutputStream()
