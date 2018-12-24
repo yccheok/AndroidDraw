@@ -203,22 +203,21 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
         // Creating a smaller child bitmap.
         val childBitmap = Bitmap.createBitmap(
-                masterBitmap,
-                (screenWidth-width) shr 1,
-                (screenHeight-height) shr 1,
                 width,
-                height
+                height,
+                Bitmap.Config.ARGB_8888
         )
 
         // Perform drawing on smaller child bitmap.
         val childCanvas = Canvas(childBitmap)
+        childCanvas.drawColor(Color.WHITE)
         draw(childCanvas)
 
         // Copy the smaller child bitmap back to larger master bitmap.
         masterCanvas.drawBitmap(
                 childBitmap,
-                ((screenWidth-width) shr 1).toFloat(),
-                ((screenHeight-height) shr 1).toFloat(),
+                (Math.max(0, (screenWidth-width)) shr 1).toFloat(),
+                (Math.max(0, (screenHeight-height)) shr 1).toFloat(),
                 mPaintForGetBitmap
         )
 
