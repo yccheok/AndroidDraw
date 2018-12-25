@@ -250,12 +250,16 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             if (mCroppedBackgroundBitmap == null) {
                 val bitmap = backgroundBitmap;
                 if (bitmap != null) {
+                    val x = Math.max(0, (bitmap.width - width)) shr 1
+                    val y = Math.max(0, (bitmap.height - height)) shr 1
+                    val w = Math.min(bitmap.width - x, width)
+                    val h = Math.min(bitmap.height - y, height)
                     mCroppedBackgroundBitmap = Bitmap.createBitmap(
                             bitmap,
-                            (bitmap.width - width) shr 1,
-                            (bitmap.height - height) shr 1,
-                            width,
-                            height
+                            x,
+                            y,
+                            w,
+                            h
                     )
                 }
             }
