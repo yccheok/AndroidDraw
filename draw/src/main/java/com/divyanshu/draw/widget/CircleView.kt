@@ -12,6 +12,8 @@ class CircleView(context: Context, attrs: AttributeSet): View(context, attrs) {
     var radius = 8f
 
     init {
+        mPaint.isAntiAlias = true
+
         mPaint.apply {
             color = Color.BLACK
             style = Paint.Style.FILL

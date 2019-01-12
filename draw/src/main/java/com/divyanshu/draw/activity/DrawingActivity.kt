@@ -19,10 +19,12 @@ import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
 import java.io.ByteArrayOutputStream
 
-class DrawingActivity : AppCompatActivity() {
+class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener {
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
+        @JvmField val RESULT_DELETE_OK = Activity.RESULT_FIRST_USER + 1;
+        const val CANCEL_OR_DELETE_DIALOG_FRAGMENT = "CANCEL_OR_DELETE_DIALOG_FRAGMENT"
 
         @JvmStatic
         fun isSupported(context: Context, width: Int, height: Int): Boolean {
@@ -40,7 +42,20 @@ class DrawingActivity : AppCompatActivity() {
     }
 
     private lateinit var drawingViewModel: DrawingViewModel
+    private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
+
+    override fun onCancel() {
+        super.finish()
+        overridePendingTransition(0, R.anim.slide_discard)
+    }
+
+    override fun onDelete() {
+        val returnIntent = Intent()
+        returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+        setResult(RESULT_DELETE_OK, returnIntent)
+        super.finish()
+    }
 
     override fun finish() {
         val bitmap = draw_view.getRotatedBitmapIfModified()
@@ -68,7 +83,8 @@ class DrawingActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_drawing)
 
-        val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
+        this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
+        val originalFilepath = this.originalFilepath
         if (originalFilepath != null) {
             drawingViewModel = ViewModelProviders.of(
                     this,
@@ -79,8 +95,13 @@ class DrawingActivity : AppCompatActivity() {
         }
 
         image_close_drawing.setOnClickListener {
-            super.finish()
-            overridePendingTransition(0, R.anim.slide_discard)
+            if (originalFilepath == null) {
+                super.finish()
+                overridePendingTransition(0, R.anim.slide_discard)
+            } else {
+                val cancelOrDeleteDialogFragment = CancelOrDeleteDialogFragment.newInstance()
+                cancelOrDeleteDialogFragment.show(supportFragmentManager, CANCEL_OR_DELETE_DIALOG_FRAGMENT)
+            }
         }
 
         image_done_drawing.setOnClickListener {

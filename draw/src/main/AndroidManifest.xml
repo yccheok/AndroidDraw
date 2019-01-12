@@ -5,7 +5,7 @@
     <application>
         <activity
             android:name=".activity.DrawingActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>
