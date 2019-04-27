@@ -1,3 +1,4 @@
 <resources>
-    <string name="delete">Удалить</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_save">Сохранить</string>
 </resources>

@@ -1,3 +1,4 @@
 <resources>
-    <string name="delete">Smazat</string>
+    <string name="action_delete">Smazat</string>
+    <string name="action_save">Uložit</string>
 </resources>

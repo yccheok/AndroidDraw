@@ -1,3 +1,4 @@
 <resources>
-    <string name="delete">Löschen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_save">Speichern</string>
 </resources>

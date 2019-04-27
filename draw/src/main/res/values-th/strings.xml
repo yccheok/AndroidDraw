@@ -1,3 +1,4 @@
 <resources>
-    <string name="delete">ลบ</string>
+    <string name="action_delete">ลบ</string>
+    <string name="action_save">บันทึก</string>
 </resources>

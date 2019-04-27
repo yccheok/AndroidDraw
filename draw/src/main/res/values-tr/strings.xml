@@ -1,3 +1,4 @@
 <resources>
-    <string name="delete">Sil</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_save">Kaydet</string>
 </resources>

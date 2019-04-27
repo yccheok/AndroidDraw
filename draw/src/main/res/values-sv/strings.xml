@@ -1,0 +1,4 @@
+<resources>
+    <string name="action_delete">Ta bort</string>
+    <string name="action_save">Spara</string>
+</resources>
