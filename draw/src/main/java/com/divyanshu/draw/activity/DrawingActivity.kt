@@ -19,12 +19,14 @@ import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
 import java.io.ByteArrayOutputStream
 
-class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener {
+class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, CancelOrSaveDialogListener {
+
     companion object {
         @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
         @JvmField val RESULT_DELETE_OK = Activity.RESULT_FIRST_USER + 1;
         const val CANCEL_OR_DELETE_DIALOG_FRAGMENT = "CANCEL_OR_DELETE_DIALOG_FRAGMENT"
+        const val CANCEL_OR_SAVE_DIALOG_FRAGMENT = "CANCEL_OR_SAVE_DIALOG_FRAGMENT"
 
         @JvmStatic
         fun isSupported(context: Context, width: Int, height: Int): Boolean {
@@ -45,6 +47,19 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener {
     private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
 
+    override fun onSave(byteArray: ByteArray) {
+        val returnIntent = Intent()
+        returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
+        val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
+        if (originalFilepath != null) {
+            returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+        }
+        setResult(Activity.RESULT_OK, returnIntent)
+
+        draw_view.savePaintOptions()
+        super.finish()
+    }
+
     override fun onCancel() {
         super.finish()
         overridePendingTransition(0, R.anim.slide_discard)
@@ -64,18 +79,14 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener {
             val bStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
             val byteArray = bStream.toByteArray()
-            val returnIntent = Intent()
-            returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-            val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
-            if (originalFilepath != null) {
-                returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
-            }
-            setResult(Activity.RESULT_OK, returnIntent)
+
+            val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance(byteArray)
+            cancelOrSaveDialogFragment.show(supportFragmentManager, CANCEL_OR_SAVE_DIALOG_FRAGMENT)
+        } else {
+            draw_view.savePaintOptions()
+
+            super.finish()
         }
-
-        draw_view.savePaintOptions()
-
-        super.finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,8 +107,8 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener {
 
         image_close_drawing.setOnClickListener {
             if (originalFilepath == null) {
-                super.finish()
-                overridePendingTransition(0, R.anim.slide_discard)
+                // Cancel or save.
+                finish()
             } else {
                 val cancelOrDeleteDialogFragment = CancelOrDeleteDialogFragment.newInstance()
                 cancelOrDeleteDialogFragment.show(supportFragmentManager, CANCEL_OR_DELETE_DIALOG_FRAGMENT)

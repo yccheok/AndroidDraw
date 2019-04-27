@@ -13,7 +13,7 @@ class CancelOrDeleteArrayAdapter(context: Context?) : ArrayAdapter<String>(
         R.layout.cancel_or_delete_array_adapter,
         arrayOf(
                 context?.getString(android.R.string.cancel),
-                context?.getString(R.string.delete)
+                context?.getString(R.string.action_delete)
         )
 ) {
 
