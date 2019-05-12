@@ -72,6 +72,21 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         super.finish()
     }
 
+    fun done() {
+        val bitmap = draw_view.getRotatedBitmapIfModified()
+
+        if (bitmap != null) {
+            val bStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
+            val byteArray = bStream.toByteArray()
+            
+            onSave(byteArray)
+        } else {
+            draw_view.savePaintOptions()
+            super.finish()
+        }
+    }
+
     override fun finish() {
         val bitmap = draw_view.getRotatedBitmapIfModified()
 
@@ -84,7 +99,6 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
             cancelOrSaveDialogFragment.show(supportFragmentManager, CANCEL_OR_SAVE_DIALOG_FRAGMENT)
         } else {
             draw_view.savePaintOptions()
-
             super.finish()
         }
     }
@@ -116,7 +130,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         }
 
         image_done_drawing.setOnClickListener {
-            finish()
+            done()
         }
 
         setUpDrawTools()
