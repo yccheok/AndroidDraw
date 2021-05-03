@@ -8,12 +8,12 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.divyanshu.draw.R
 
-class CancelOrSaveArrayAdapter(context: Context?) : ArrayAdapter<String>(
+class CancelOrSaveArrayAdapter(context: Context) : ArrayAdapter<String>(
         context,
         R.layout.cancel_or_save_array_adapter,
         arrayOf(
-                context?.getString(android.R.string.cancel),
-                context?.getString(R.string.action_save)
+                context.getString(android.R.string.cancel),
+                context.getString(R.string.action_save)
         )
 ) {
 

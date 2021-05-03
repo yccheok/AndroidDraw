@@ -2,8 +2,8 @@ package com.divyanshu.draw.activity
 
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AlertDialog
 
 class CancelOrSaveDialogFragment : DialogFragment() {
     companion object {
@@ -20,9 +20,9 @@ class CancelOrSaveDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val arguments = arguments
-        val byteArray = arguments!!.getByteArray(INTENT_EXTRA_BYTE_ARRAY)
+        val byteArray = arguments?.getByteArray(INTENT_EXTRA_BYTE_ARRAY)
 
-        val arrayAdapter = com.divyanshu.draw.activity.CancelOrSaveArrayAdapter(context)
+        val arrayAdapter = CancelOrSaveArrayAdapter(requireContext())
 
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
                 .setAdapter(arrayAdapter) { dialog, which ->
@@ -31,7 +31,9 @@ class CancelOrSaveDialogFragment : DialogFragment() {
                         if (which == 0) {
                             (activity as CancelOrSaveDialogListener).onCancel()
                         } else if (which == 1) {
-                            (activity as CancelOrSaveDialogListener).onSave(byteArray)
+                            if (byteArray != null) {
+                                (activity as CancelOrSaveDialogListener).onSave(byteArray)
+                            }
                         }
                     }
                 }
