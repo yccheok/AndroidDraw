@@ -7,17 +7,22 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.divyanshu.draw.R
+import com.divyanshu.draw.databinding.ActivityDrawingBinding
+import com.divyanshu.draw.databinding.ColorPaletteViewBinding
 import com.divyanshu.draw.model.DrawingViewModel
 import com.divyanshu.draw.model.DrawingViewModelFactory
 import com.divyanshu.draw.model.ImageInfo
-import kotlinx.android.synthetic.main.activity_drawing.*
-import kotlinx.android.synthetic.main.color_palette_view.*
+import com.divyanshu.draw.widget.CircleView
+import com.divyanshu.draw.widget.DrawView
 
 class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, CancelOrSaveDialogListener {
 
@@ -70,6 +75,30 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     private val bitmapObserver = BitmapObserver()
     private val imageInfoObserver = ImageInfoObserver()
 
+    private lateinit var binding: ActivityDrawingBinding
+    private lateinit var draw_view: DrawView
+    private lateinit var image_draw_eraser: ImageView
+    private lateinit var image_draw_width: ImageView
+    private lateinit var image_draw_opacity: ImageView
+    private lateinit var image_draw_color: ImageView
+    private lateinit var circle_view_width: CircleView
+    private lateinit var circle_view_opacity: CircleView
+    private lateinit var seekBar_width: SeekBar
+    private lateinit var seekBar_opacity: SeekBar
+    private lateinit var draw_tools: ConstraintLayout
+    private lateinit var image_close_drawing: ImageView
+    private lateinit var image_done_drawing: ImageView
+    private lateinit var image_draw_undo: ImageView
+    private lateinit var image_draw_redo: ImageView
+    private lateinit var draw_color_palette: LinearLayout
+    private lateinit var image_color_black: ImageView
+    private lateinit var image_color_red: ImageView
+    private lateinit var image_color_yellow: ImageView
+    private lateinit var image_color_green: ImageView
+    private lateinit var image_color_blue: ImageView
+    private lateinit var image_color_pink: ImageView
+    private lateinit var image_color_brown: ImageView
+
     override fun onSave() {
         val savedFilepath = this.savedFilepath ?: return
 
@@ -115,7 +144,32 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_drawing)
+        binding = ActivityDrawingBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+
+        draw_view = binding.drawView
+        image_draw_eraser = binding.imageDrawEraser
+        image_draw_width = binding.imageDrawWidth
+        image_draw_opacity = binding.imageDrawOpacity
+        image_draw_color = binding.imageDrawColor
+        circle_view_width = binding.circleViewWidth
+        circle_view_opacity = binding.circleViewOpacity
+        seekBar_width = binding.seekBarWidth
+        seekBar_opacity = binding.seekBarOpacity
+        draw_tools = binding.drawTools
+        image_close_drawing = binding.imageCloseDrawing
+        image_done_drawing = binding.imageDoneDrawing
+        image_draw_undo = binding.imageDrawUndo
+        image_draw_redo = binding.imageDrawRedo
+        draw_color_palette = binding.drawColorPalette.linearLayout
+        image_color_black = binding.drawColorPalette.imageColorBlack
+        image_color_red = binding.drawColorPalette.imageColorRed
+        image_color_yellow = binding.drawColorPalette.imageColorYellow
+        image_color_green = binding.drawColorPalette.imageColorGreen
+        image_color_blue = binding.drawColorPalette.imageColorBlue
+        image_color_pink = binding.drawColorPalette.imageColorPink
+        image_color_brown = binding.drawColorPalette.imageColorBrown
 
         this.savedFilepath = intent.getStringExtra(INTENT_EXTRA_SAVED_FILEPATH)
         this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH)

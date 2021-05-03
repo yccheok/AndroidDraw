@@ -6,10 +6,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 import com.divyanshu.draw.activity.DrawingActivity
 import com.divyanshu.draw.activity.DrawingActivity.Companion.INTENT_EXTRA_SAVED_FILEPATH
 import com.divyanshu.draw.model.ImageInfo
-import kotlinx.android.synthetic.main.activity_main.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
@@ -24,9 +25,9 @@ class MainActivity : AppCompatActivity() {
 
 
         adapter = DrawAdapter(this, getFilesPath())
-        recycler_view.adapter = adapter
-            
-        fab_add_draw.setOnClickListener {
+        findViewById<RecyclerView>(R.id.recycler_view).adapter = adapter
+
+        findViewById<FloatingActionButton>(R.id.fab_add_draw).setOnClickListener {
             val intent = Intent(this, DrawingActivity::class.java)
 
             intent.putExtra(INTENT_EXTRA_SAVED_FILEPATH, generateSavedFilepath())
