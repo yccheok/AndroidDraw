@@ -1,29 +1,35 @@
 package com.divyanshu.draw.activity
 
-import android.arch.lifecycle.ViewModelProviders
 import android.app.Activity
-import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.divyanshu.draw.R
+import com.divyanshu.draw.databinding.ActivityDrawingBinding
 import com.divyanshu.draw.model.DrawingViewModel
 import com.divyanshu.draw.model.DrawingViewModelFactory
-import kotlinx.android.synthetic.main.activity_drawing.*
-import kotlinx.android.synthetic.main.color_palette_view.*
-import java.io.ByteArrayOutputStream
+import com.divyanshu.draw.model.ImageInfo
+import com.divyanshu.draw.widget.CircleView
+import com.divyanshu.draw.widget.DrawView
 
 class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, CancelOrSaveDialogListener {
 
     companion object {
-        @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
+        @JvmField val INTENT_EXTRA_SAVED_FILEPATH = "INTENT_EXTRA_SAVED_FILEPATH"
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
+        @JvmField val INTENT_EXTRA_IMAGE_INFO = "INTENT_EXTRA_IMAGE_INFO"
+
         @JvmField val RESULT_DELETE_OK = Activity.RESULT_FIRST_USER + 1;
         const val CANCEL_OR_DELETE_DIALOG_FRAGMENT = "CANCEL_OR_DELETE_DIALOG_FRAGMENT"
         const val CANCEL_OR_SAVE_DIALOG_FRAGMENT = "CANCEL_OR_SAVE_DIALOG_FRAGMENT"
@@ -43,21 +49,64 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         }
     }
 
+    private inner class ImageInfoObserver : Observer<ImageInfo> {
+        override fun onChanged(imageInfo: ImageInfo?) {
+            if (imageInfo == null) {
+                return
+            }
+
+            val returnIntent = Intent()
+
+            returnIntent.putExtra(INTENT_EXTRA_IMAGE_INFO, imageInfo)
+            if (originalFilepath != null) {
+                returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+            }
+            setResult(Activity.RESULT_OK, returnIntent)
+
+            draw_view.savePaintOptions()
+            super@DrawingActivity.finish()
+        }
+    }
+
     private lateinit var drawingViewModel: DrawingViewModel
+    private var savedFilepath: String? = null
     private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
+    private val imageInfoObserver = ImageInfoObserver()
 
-    override fun onSave(byteArray: ByteArray) {
-        val returnIntent = Intent()
-        returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-        val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
-        if (originalFilepath != null) {
-            returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+    private lateinit var binding: ActivityDrawingBinding
+    private lateinit var draw_view: DrawView
+    private lateinit var image_draw_eraser: ImageView
+    private lateinit var image_draw_width: ImageView
+    private lateinit var image_draw_opacity: ImageView
+    private lateinit var image_draw_color: ImageView
+    private lateinit var circle_view_width: CircleView
+    private lateinit var circle_view_opacity: CircleView
+    private lateinit var seekBar_width: SeekBar
+    private lateinit var seekBar_opacity: SeekBar
+    private lateinit var draw_tools: ConstraintLayout
+    private lateinit var image_close_drawing: ImageView
+    private lateinit var image_done_drawing: ImageView
+    private lateinit var image_draw_undo: ImageView
+    private lateinit var image_draw_redo: ImageView
+    private lateinit var draw_color_palette: LinearLayout
+    private lateinit var image_color_black: ImageView
+    private lateinit var image_color_red: ImageView
+    private lateinit var image_color_yellow: ImageView
+    private lateinit var image_color_green: ImageView
+    private lateinit var image_color_blue: ImageView
+    private lateinit var image_color_pink: ImageView
+    private lateinit var image_color_brown: ImageView
+
+    override fun onSave() {
+        val savedFilepath = this.savedFilepath ?: return
+
+        val bitmap = draw_view.getRotatedBitmapIfModified()
+
+        if (bitmap != null) {
+            drawingViewModel.imageInfoLiveData.observe(this, imageInfoObserver)
+            drawingViewModel.saveAsync(savedFilepath, bitmap)
         }
-        setResult(Activity.RESULT_OK, returnIntent)
-
-        draw_view.savePaintOptions()
-        super.finish()
     }
 
     override fun onCancel() {
@@ -73,14 +122,8 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     }
 
     fun done() {
-        val bitmap = draw_view.getRotatedBitmapIfModified()
-
-        if (bitmap != null) {
-            val bStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
-            val byteArray = bStream.toByteArray()
-            
-            onSave(byteArray)
+        if (draw_view.isModified()) {
+            onSave()
         } else {
             draw_view.savePaintOptions()
             super.finish()
@@ -88,14 +131,8 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     }
 
     override fun finish() {
-        val bitmap = draw_view.getRotatedBitmapIfModified()
-
-        if (bitmap != null) {
-            val bStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
-            val byteArray = bStream.toByteArray()
-
-            val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance(byteArray)
+        if (draw_view.isModified()) {
+            val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance()
             cancelOrSaveDialogFragment.show(supportFragmentManager, CANCEL_OR_SAVE_DIALOG_FRAGMENT)
         } else {
             draw_view.savePaintOptions()
@@ -106,16 +143,42 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_drawing)
+        binding = ActivityDrawingBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
-        val originalFilepath = this.originalFilepath
+        draw_view = binding.drawView
+        image_draw_eraser = binding.imageDrawEraser
+        image_draw_width = binding.imageDrawWidth
+        image_draw_opacity = binding.imageDrawOpacity
+        image_draw_color = binding.imageDrawColor
+        circle_view_width = binding.circleViewWidth
+        circle_view_opacity = binding.circleViewOpacity
+        seekBar_width = binding.seekBarWidth
+        seekBar_opacity = binding.seekBarOpacity
+        draw_tools = binding.drawTools
+        image_close_drawing = binding.imageCloseDrawing
+        image_done_drawing = binding.imageDoneDrawing
+        image_draw_undo = binding.imageDrawUndo
+        image_draw_redo = binding.imageDrawRedo
+        draw_color_palette = binding.drawColorPalette.linearLayout
+        image_color_black = binding.drawColorPalette.imageColorBlack
+        image_color_red = binding.drawColorPalette.imageColorRed
+        image_color_yellow = binding.drawColorPalette.imageColorYellow
+        image_color_green = binding.drawColorPalette.imageColorGreen
+        image_color_blue = binding.drawColorPalette.imageColorBlue
+        image_color_pink = binding.drawColorPalette.imageColorPink
+        image_color_brown = binding.drawColorPalette.imageColorBrown
+
+        this.savedFilepath = intent.getStringExtra(INTENT_EXTRA_SAVED_FILEPATH)
+        this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH)
+
+        drawingViewModel = ViewModelProvider(
+                this,
+                DrawingViewModelFactory(originalFilepath)
+        ).get(DrawingViewModel::class.java)
+
         if (originalFilepath != null) {
-            drawingViewModel = ViewModelProviders.of(
-                    this,
-                    DrawingViewModelFactory(originalFilepath)
-            ).get(DrawingViewModel::class.java)
-
             drawingViewModel.bitmapLiveData.observe(this, bitmapObserver)
         }
 

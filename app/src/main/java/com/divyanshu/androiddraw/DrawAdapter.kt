@@ -3,13 +3,12 @@ package com.divyanshu.androiddraw
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.item_view.view.*
 
 const val IMAGE_PATH = "image_path"
 class DrawAdapter(private val context: Context, private val imageList: ArrayList<String>) : RecyclerView.Adapter<DrawAdapter.ViewHolder>(){
@@ -33,8 +32,8 @@ class DrawAdapter(private val context: Context, private val imageList: ArrayList
         }
     }
 
-    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
-        val drawImage: ImageView = itemView.image_draw
+    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        val drawImage: ImageView = itemView.findViewById(R.id.image_draw)
     }
 
     fun addItem(uri: Uri){
