@@ -230,8 +230,16 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return Bitmap.createBitmap(masterBitmap, 0, 0, masterBitmap.width, masterBitmap.height, matrix, true)
     }
 
-    fun getRotatedBitmapIfModified(): Bitmap? {
+    fun isModified(): Boolean {
         if (mPaths.isEmpty()) {
+            return false
+        } else {
+            return true
+        }
+    }
+
+    fun getRotatedBitmapIfModified(): Bitmap? {
+        if (!isModified()) {
             return null
         }
         
