@@ -1,15 +1,15 @@
 package com.divyanshu.draw.activity
 
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.app.Activity
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v7.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import com.divyanshu.draw.R
