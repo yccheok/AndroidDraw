@@ -1,29 +1,31 @@
 package com.divyanshu.draw.activity
 
-import androidx.lifecycle.ViewModelProviders
 import android.app.Activity
-import androidx.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Bundle
-import androidx.core.content.res.ResourcesCompat
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.divyanshu.draw.R
 import com.divyanshu.draw.model.DrawingViewModel
 import com.divyanshu.draw.model.DrawingViewModelFactory
+import com.divyanshu.draw.model.ImageInfo
 import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlinx.android.synthetic.main.color_palette_view.*
-import java.io.ByteArrayOutputStream
 
 class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, CancelOrSaveDialogListener {
 
     companion object {
-        @JvmField val INTENT_EXTRA_BITMAP = "INTENT_EXTRA_BITMAP"
+        @JvmField val INTENT_EXTRA_SAVED_FILEPATH = "INTENT_EXTRA_SAVED_FILEPATH"
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
+        @JvmField val INTENT_EXTRA_IMAGE_INFO = "INTENT_EXTRA_IMAGE_INFO"
+
         @JvmField val RESULT_DELETE_OK = Activity.RESULT_FIRST_USER + 1;
         const val CANCEL_OR_DELETE_DIALOG_FRAGMENT = "CANCEL_OR_DELETE_DIALOG_FRAGMENT"
         const val CANCEL_OR_SAVE_DIALOG_FRAGMENT = "CANCEL_OR_SAVE_DIALOG_FRAGMENT"
@@ -43,21 +45,40 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         }
     }
 
+    private inner class ImageInfoObserver : Observer<ImageInfo> {
+        override fun onChanged(imageInfo: ImageInfo?) {
+            if (imageInfo == null) {
+                return
+            }
+
+            val returnIntent = Intent()
+
+            returnIntent.putExtra(INTENT_EXTRA_IMAGE_INFO, imageInfo)
+            if (originalFilepath != null) {
+                returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+            }
+            setResult(Activity.RESULT_OK, returnIntent)
+
+            draw_view.savePaintOptions()
+            super@DrawingActivity.finish()
+        }
+    }
+
     private lateinit var drawingViewModel: DrawingViewModel
+    private var savedFilepath: String? = null
     private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
+    private val imageInfoObserver = ImageInfoObserver()
 
-    override fun onSave(byteArray: ByteArray) {
-        val returnIntent = Intent()
-        returnIntent.putExtra(INTENT_EXTRA_BITMAP, byteArray)
-        val originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
-        if (originalFilepath != null) {
-            returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
+    override fun onSave() {
+        val savedFilepath = this.savedFilepath ?: return
+
+        val bitmap = draw_view.getRotatedBitmapIfModified()
+
+        if (bitmap != null) {
+            drawingViewModel.imageInfoLiveData.observe(this, imageInfoObserver)
+            drawingViewModel.saveAsync(savedFilepath, bitmap)
         }
-        setResult(Activity.RESULT_OK, returnIntent)
-
-        draw_view.savePaintOptions()
-        super.finish()
     }
 
     override fun onCancel() {
@@ -73,14 +94,8 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     }
 
     fun done() {
-        val bitmap = draw_view.getRotatedBitmapIfModified()
-
-        if (bitmap != null) {
-            val bStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
-            val byteArray = bStream.toByteArray()
-            
-            onSave(byteArray)
+        if (draw_view.isModified()) {
+            onSave()
         } else {
             draw_view.savePaintOptions()
             super.finish()
@@ -88,14 +103,8 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     }
 
     override fun finish() {
-        val bitmap = draw_view.getRotatedBitmapIfModified()
-
-        if (bitmap != null) {
-            val bStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream)
-            val byteArray = bStream.toByteArray()
-
-            val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance(byteArray)
+        if (draw_view.isModified()) {
+            val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance()
             cancelOrSaveDialogFragment.show(supportFragmentManager, CANCEL_OR_SAVE_DIALOG_FRAGMENT)
         } else {
             draw_view.savePaintOptions()
@@ -108,14 +117,15 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
 
         setContentView(R.layout.activity_drawing)
 
-        this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH);
-        val originalFilepath = this.originalFilepath
-        if (originalFilepath != null) {
-            drawingViewModel = ViewModelProviders.of(
-                    this,
-                    DrawingViewModelFactory(originalFilepath)
-            ).get(DrawingViewModel::class.java)
+        this.savedFilepath = intent.getStringExtra(INTENT_EXTRA_SAVED_FILEPATH)
+        this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH)
 
+        drawingViewModel = ViewModelProviders.of(
+                this,
+                DrawingViewModelFactory(originalFilepath)
+        ).get(DrawingViewModel::class.java)
+
+        if (originalFilepath != null) {
             drawingViewModel.bitmapLiveData.observe(this, bitmapObserver)
         }
 
