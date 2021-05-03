@@ -17,7 +17,7 @@ class CancelOrSaveDialogFragment : DialogFragment() {
         val arrayAdapter = CancelOrSaveArrayAdapter(requireContext())
 
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
-                .setAdapter(arrayAdapter) { dialog, which ->
+                .setAdapter(arrayAdapter) { _, which ->
                     val activity = activity
                     if (activity is CancelOrSaveDialogListener) {
                         if (which == 0) {

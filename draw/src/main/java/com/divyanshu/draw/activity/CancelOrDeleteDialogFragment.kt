@@ -16,7 +16,7 @@ class CancelOrDeleteDialogFragment : DialogFragment() {
         val arrayAdapter = com.divyanshu.draw.activity.CancelOrDeleteArrayAdapter(requireContext())
 
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
-                .setAdapter(arrayAdapter) { dialog, which ->
+                .setAdapter(arrayAdapter) { _, which ->
                     val activity = activity
                     if (activity is CancelOrDeleteDialogListener) {
                         if (which == 0) {

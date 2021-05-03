@@ -14,10 +14,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.divyanshu.draw.R
 import com.divyanshu.draw.databinding.ActivityDrawingBinding
-import com.divyanshu.draw.databinding.ColorPaletteViewBinding
 import com.divyanshu.draw.model.DrawingViewModel
 import com.divyanshu.draw.model.DrawingViewModelFactory
 import com.divyanshu.draw.model.ImageInfo
@@ -174,7 +173,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         this.savedFilepath = intent.getStringExtra(INTENT_EXTRA_SAVED_FILEPATH)
         this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH)
 
-        drawingViewModel = ViewModelProviders.of(
+        drawingViewModel = ViewModelProvider(
                 this,
                 DrawingViewModelFactory(originalFilepath)
         ).get(DrawingViewModel::class.java)
