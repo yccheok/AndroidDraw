@@ -3,8 +3,8 @@ package com.divyanshu.draw.widget
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.*
-import android.support.annotation.ColorInt
-import android.support.v4.graphics.ColorUtils
+import androidx.annotation.ColorInt
+import androidx.core.graphics.ColorUtils
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.Surface
@@ -264,10 +264,15 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 }
             }
 
-            if (mCroppedBackgroundBitmap != null) {
+            // https://stackoverflow.com/questions/44595529/smart-cast-to-type-is-impossible-because-variable-is-a-mutable-property-tha
+            // Smart cast to 'Bitmap' is impossible, because 'mCroppedBackgroundBitmap' is a mutable property that could have been changed by this time
+
+            val croppedBackgroundBitmap = mCroppedBackgroundBitmap
+
+            if (croppedBackgroundBitmap != null) {
                 // Reset alpha value.
                 mPaint.alpha = 255
-                canvas.drawBitmap(mCroppedBackgroundBitmap, 0f, 0f, mPaint)
+                canvas.drawBitmap(croppedBackgroundBitmap, 0f, 0f, mPaint)
             }
         }
 
