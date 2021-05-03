@@ -3,7 +3,7 @@ package com.divyanshu.androiddraw
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +33,7 @@ class DrawAdapter(private val context: Context, private val imageList: ArrayList
         }
     }
 
-    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val drawImage: ImageView = itemView.image_draw
     }
 
