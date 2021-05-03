@@ -7,21 +7,13 @@ import androidx.appcompat.app.AlertDialog
 
 class CancelOrSaveDialogFragment : DialogFragment() {
     companion object {
-        const val INTENT_EXTRA_BYTE_ARRAY = "INTENT_EXTRA_BYTE_ARRAY"
-
-        fun newInstance(byteArray: ByteArray): CancelOrSaveDialogFragment {
+        fun newInstance(): CancelOrSaveDialogFragment {
             val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment()
-            val arguments = Bundle()
-            arguments.putByteArray(INTENT_EXTRA_BYTE_ARRAY, byteArray)
-            cancelOrSaveDialogFragment.arguments = arguments
             return cancelOrSaveDialogFragment
         }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = arguments
-        val byteArray = arguments?.getByteArray(INTENT_EXTRA_BYTE_ARRAY)
-
         val arrayAdapter = CancelOrSaveArrayAdapter(requireContext())
 
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
@@ -31,9 +23,7 @@ class CancelOrSaveDialogFragment : DialogFragment() {
                         if (which == 0) {
                             (activity as CancelOrSaveDialogListener).onCancel()
                         } else if (which == 1) {
-                            if (byteArray != null) {
-                                (activity as CancelOrSaveDialogListener).onSave(byteArray)
-                            }
+                            (activity as CancelOrSaveDialogListener).onSave()
                         }
                     }
                 }
