@@ -51,6 +51,9 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
             } catch (e: IOException) {
                 Log.e(TAG, "", e)
             }
+
+            // Required?
+            bitmap.recycle()
         }
 
         val imageWidth = bitmap.width
