@@ -26,7 +26,6 @@ import com.divyanshu.draw.widget.DrawView
 class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, CancelOrSaveDialogListener {
 
     companion object {
-        @JvmField val INTENT_EXTRA_SAVED_FILEPATH = "INTENT_EXTRA_SAVED_FILEPATH"
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
         @JvmField val INTENT_EXTRA_IMAGE_INFO = "INTENT_EXTRA_IMAGE_INFO"
 
@@ -69,7 +68,6 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     }
 
     private lateinit var drawingViewModel: DrawingViewModel
-    private var savedFilepath: String? = null
     private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
     private val imageInfoObserver = ImageInfoObserver()
@@ -99,13 +97,13 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     private lateinit var image_color_brown: ImageView
 
     override fun onSave() {
-        val savedFilepath = this.savedFilepath ?: return
+        val imageInfo = intent.getParcelableExtra<ImageInfo>(INTENT_EXTRA_IMAGE_INFO)
 
         val bitmap = draw_view.getRotatedBitmapIfModified()
 
-        if (bitmap != null) {
+        if (imageInfo != null && bitmap != null) {
             drawingViewModel.imageInfoLiveData.observe(this, imageInfoObserver)
-            drawingViewModel.saveAsync(savedFilepath, bitmap)
+            drawingViewModel.saveAsync(imageInfo, bitmap)
         }
     }
 
@@ -170,7 +168,6 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         image_color_pink = binding.drawColorPalette.imageColorPink
         image_color_brown = binding.drawColorPalette.imageColorBrown
 
-        this.savedFilepath = intent.getStringExtra(INTENT_EXTRA_SAVED_FILEPATH)
         this.originalFilepath = intent.getStringExtra(INTENT_EXTRA_ORIGINAL_FILEPATH)
 
         drawingViewModel = ViewModelProvider(

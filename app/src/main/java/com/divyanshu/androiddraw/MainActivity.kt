@@ -8,7 +8,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.divyanshu.draw.activity.DrawingActivity
-import com.divyanshu.draw.activity.DrawingActivity.Companion.INTENT_EXTRA_SAVED_FILEPATH
+import com.divyanshu.draw.activity.DrawingActivity.Companion.INTENT_EXTRA_IMAGE_INFO
 import com.divyanshu.draw.model.ImageInfo
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
@@ -30,20 +30,27 @@ class MainActivity : AppCompatActivity() {
         findViewById<FloatingActionButton>(R.id.fab_add_draw).setOnClickListener {
             val intent = Intent(this, DrawingActivity::class.java)
 
-            intent.putExtra(INTENT_EXTRA_SAVED_FILEPATH, generateSavedFilepath())
+            intent.putExtra(INTENT_EXTRA_IMAGE_INFO, generateImageInfo())
 
             startActivityForResult(intent, REQUEST_CODE_DRAW)
         }
     }
 
-    private fun generateSavedFilepath(): String {
+    private fun generateImageInfo(): ImageInfo {
         val path = File(getExternalFilesDir(null), "Android Draw")
         path.mkdirs()
         Log.e("path", path.toString())
-        val fileName = UUID.randomUUID().toString()
-        val file = File(path, "$fileName.png")
+        val fileName = UUID.randomUUID().toString() + ".png"
+        val file = File(path, fileName)
 
-        return file.absolutePath
+        return ImageInfo(
+                0,
+                fileName,
+                file.absolutePath,
+                0,
+                0,
+                0
+        )
     }
     
     private fun getFilesPath(): ArrayList<String>{
@@ -63,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 REQUEST_CODE_DRAW -> {
                     val imageInfo = data.getParcelableExtra<ImageInfo>(DrawingActivity.INTENT_EXTRA_IMAGE_INFO)
                     if (imageInfo != null) {
-                        updateRecyclerView(Uri.fromFile(File(imageInfo.name)))
+                        updateRecyclerView(Uri.fromFile(File(imageInfo.path)))
                     }
 
                 }
