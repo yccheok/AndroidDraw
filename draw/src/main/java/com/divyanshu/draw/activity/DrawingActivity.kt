@@ -51,6 +51,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     private inner class DrawingInfoObserver : Observer<DrawingInfo> {
         override fun onChanged(drawingInfo: DrawingInfo?) {
             if (drawingInfo == null) {
+                superFinish()
                 return
             }
 
@@ -62,8 +63,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
             }
             setResult(Activity.RESULT_OK, returnIntent)
 
-            draw_view.savePaintOptions()
-            super@DrawingActivity.finish()
+            superFinish()
         }
     }
 
@@ -123,8 +123,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         if (draw_view.isModified()) {
             onSave()
         } else {
-            draw_view.savePaintOptions()
-            super.finish()
+            superFinish()
         }
     }
 
@@ -133,11 +132,15 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
             val cancelOrSaveDialogFragment = CancelOrSaveDialogFragment.newInstance()
             cancelOrSaveDialogFragment.show(supportFragmentManager, CANCEL_OR_SAVE_DIALOG_FRAGMENT)
         } else {
-            draw_view.savePaintOptions()
-            super.finish()
+            superFinish()
         }
     }
 
+    private fun superFinish() {
+        draw_view.savePaintOptions()
+        super.finish()
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -28,10 +28,9 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
 
     fun saveAsync(drawingInfo: DrawingInfo, bitmap: Bitmap) {
         executor.execute {
-            val imageInfo = save(drawingInfo, bitmap)
-            if (imageInfo != null) {
-                drawingInfoLiveData.postValue(imageInfo)
-            }
+            val _drawingInfo = save(drawingInfo, bitmap)
+            // _drawingInfo can be null.
+            drawingInfoLiveData.postValue(_drawingInfo)
         }
     }
 
