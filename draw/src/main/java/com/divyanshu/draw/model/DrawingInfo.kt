@@ -3,7 +3,7 @@ package com.divyanshu.draw.model
 import android.os.Parcel
 import android.os.Parcelable
 
-data class ImageInfo(val directoryCode: Int, val name: String, val path: String, val size: Long, val width: Int, val height: Int) : Parcelable {
+data class DrawingInfo(val directoryCode: Int, val name: String, val path: String, val size: Long, val width: Int, val height: Int) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readInt(),
             parcel.readString()!!,
@@ -26,12 +26,12 @@ data class ImageInfo(val directoryCode: Int, val name: String, val path: String,
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ImageInfo> {
-        override fun createFromParcel(parcel: Parcel): ImageInfo {
-            return ImageInfo(parcel)
+    companion object CREATOR : Parcelable.Creator<DrawingInfo> {
+        override fun createFromParcel(parcel: Parcel): DrawingInfo {
+            return DrawingInfo(parcel)
         }
 
-        override fun newArray(size: Int): Array<ImageInfo?> {
+        override fun newArray(size: Int): Array<DrawingInfo?> {
             return arrayOfNulls(size)
         }
     }

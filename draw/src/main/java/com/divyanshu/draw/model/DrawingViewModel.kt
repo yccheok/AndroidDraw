@@ -15,7 +15,7 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
 
     private val executor = Executors.newSingleThreadExecutor()
     val bitmapLiveData: MutableLiveData<Bitmap> = MutableLiveData()
-    val imageInfoLiveData: MutableLiveData<ImageInfo> = MutableLiveData()
+    val drawingInfoLiveData: MutableLiveData<DrawingInfo> = MutableLiveData()
 
     init {
         if (filepath != null) {
@@ -26,17 +26,17 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
         }
     }
 
-    fun saveAsync(imageInfo: ImageInfo, bitmap: Bitmap) {
+    fun saveAsync(drawingInfo: DrawingInfo, bitmap: Bitmap) {
         executor.execute {
-            val imageInfo = save(imageInfo, bitmap)
+            val imageInfo = save(drawingInfo, bitmap)
             if (imageInfo != null) {
-                imageInfoLiveData.postValue(imageInfo)
+                drawingInfoLiveData.postValue(imageInfo)
             }
         }
     }
 
-    private fun save(imageInfo: ImageInfo, bitmap: Bitmap): ImageInfo? {
-        val file = File(imageInfo.path)
+    private fun save(drawingInfo: DrawingInfo, bitmap: Bitmap): DrawingInfo? {
+        val file = File(drawingInfo.path)
         var outputStream: OutputStream? = null
 
         try {
@@ -65,12 +65,12 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
         }
 
         // Get image size in byte.
-        val size: Long = File(imageInfo.path).length()
+        val size: Long = File(drawingInfo.path).length()
         
-        return ImageInfo(
-                imageInfo.directoryCode,
-                imageInfo.name,
-                imageInfo.path,
+        return DrawingInfo(
+                drawingInfo.directoryCode,
+                drawingInfo.name,
+                drawingInfo.path,
                 size,
                 imageWidth,
                 imageHeight

@@ -8,8 +8,8 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.divyanshu.draw.activity.DrawingActivity
-import com.divyanshu.draw.activity.DrawingActivity.Companion.INTENT_EXTRA_IMAGE_INFO
-import com.divyanshu.draw.model.ImageInfo
+import com.divyanshu.draw.activity.DrawingActivity.Companion.INTENT_EXTRA_DRAWING_INFO
+import com.divyanshu.draw.model.DrawingInfo
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
 import java.util.*
@@ -30,20 +30,20 @@ class MainActivity : AppCompatActivity() {
         findViewById<FloatingActionButton>(R.id.fab_add_draw).setOnClickListener {
             val intent = Intent(this, DrawingActivity::class.java)
 
-            intent.putExtra(INTENT_EXTRA_IMAGE_INFO, generateImageInfo())
+            intent.putExtra(INTENT_EXTRA_DRAWING_INFO, generateDrawingInfo())
 
             startActivityForResult(intent, REQUEST_CODE_DRAW)
         }
     }
 
-    private fun generateImageInfo(): ImageInfo {
+    private fun generateDrawingInfo(): DrawingInfo {
         val path = File(getExternalFilesDir(null), "Android Draw")
         path.mkdirs()
         Log.e("path", path.toString())
         val fileName = UUID.randomUUID().toString() + ".png"
         val file = File(path, fileName)
 
-        return ImageInfo(
+        return DrawingInfo(
                 0,
                 fileName,
                 file.absolutePath,
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         if (data != null && resultCode == Activity.RESULT_OK) {
             when(requestCode){
                 REQUEST_CODE_DRAW -> {
-                    val imageInfo = data.getParcelableExtra<ImageInfo>(DrawingActivity.INTENT_EXTRA_IMAGE_INFO)
+                    val imageInfo = data.getParcelableExtra<DrawingInfo>(DrawingActivity.INTENT_EXTRA_DRAWING_INFO)
                     if (imageInfo != null) {
                         updateRecyclerView(Uri.fromFile(File(imageInfo.path)))
                     }

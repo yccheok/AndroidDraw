@@ -19,7 +19,7 @@ import com.divyanshu.draw.R
 import com.divyanshu.draw.databinding.ActivityDrawingBinding
 import com.divyanshu.draw.model.DrawingViewModel
 import com.divyanshu.draw.model.DrawingViewModelFactory
-import com.divyanshu.draw.model.ImageInfo
+import com.divyanshu.draw.model.DrawingInfo
 import com.divyanshu.draw.widget.CircleView
 import com.divyanshu.draw.widget.DrawView
 
@@ -27,7 +27,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
 
     companion object {
         @JvmField val INTENT_EXTRA_ORIGINAL_FILEPATH = "INTENT_EXTRA_ORIGINAL_FILEPATH"
-        @JvmField val INTENT_EXTRA_IMAGE_INFO = "INTENT_EXTRA_IMAGE_INFO"
+        @JvmField val INTENT_EXTRA_DRAWING_INFO = "INTENT_EXTRA_DRAWING_INFO"
 
         @JvmField val RESULT_DELETE_OK = Activity.RESULT_FIRST_USER + 1;
         const val CANCEL_OR_DELETE_DIALOG_FRAGMENT = "CANCEL_OR_DELETE_DIALOG_FRAGMENT"
@@ -48,15 +48,15 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
         }
     }
 
-    private inner class ImageInfoObserver : Observer<ImageInfo> {
-        override fun onChanged(imageInfo: ImageInfo?) {
-            if (imageInfo == null) {
+    private inner class DrawingInfoObserver : Observer<DrawingInfo> {
+        override fun onChanged(drawingInfo: DrawingInfo?) {
+            if (drawingInfo == null) {
                 return
             }
 
             val returnIntent = Intent()
 
-            returnIntent.putExtra(INTENT_EXTRA_IMAGE_INFO, imageInfo)
+            returnIntent.putExtra(INTENT_EXTRA_DRAWING_INFO, drawingInfo)
             if (originalFilepath != null) {
                 returnIntent.putExtra(INTENT_EXTRA_ORIGINAL_FILEPATH, originalFilepath)
             }
@@ -70,7 +70,7 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     private lateinit var drawingViewModel: DrawingViewModel
     private var originalFilepath: String? = null
     private val bitmapObserver = BitmapObserver()
-    private val imageInfoObserver = ImageInfoObserver()
+    private val drawingInfoObserver = DrawingInfoObserver()
 
     private lateinit var binding: ActivityDrawingBinding
     private lateinit var draw_view: DrawView
@@ -97,13 +97,13 @@ class DrawingActivity : AppCompatActivity(), CancelOrDeleteDialogListener, Cance
     private lateinit var image_color_brown: ImageView
 
     override fun onSave() {
-        val imageInfo = intent.getParcelableExtra<ImageInfo>(INTENT_EXTRA_IMAGE_INFO)
+        val drawingInfo = intent.getParcelableExtra<DrawingInfo>(INTENT_EXTRA_DRAWING_INFO)
 
         val bitmap = draw_view.getRotatedBitmapIfModified()
 
-        if (imageInfo != null && bitmap != null) {
-            drawingViewModel.imageInfoLiveData.observe(this, imageInfoObserver)
-            drawingViewModel.saveAsync(imageInfo, bitmap)
+        if (drawingInfo != null && bitmap != null) {
+            drawingViewModel.drawingInfoLiveData.observe(this, drawingInfoObserver)
+            drawingViewModel.saveAsync(drawingInfo, bitmap)
         }
     }
 
