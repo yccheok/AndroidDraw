@@ -3,12 +3,13 @@ package com.divyanshu.draw.model
 import android.os.Parcel
 import android.os.Parcelable
 
-data class DrawingInfo(val directoryCode: Int, val name: String, val path: String, val size: Long, val width: Int, val height: Int) : Parcelable {
+data class DrawingInfo(val directoryCode: Int, val name: String, val path: String, val size: Long, val checksum: String?, val width: Int, val height: Int) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readInt(),
             parcel.readString()!!,
             parcel.readString()!!,
             parcel.readLong(),
+            parcel.readString(),
             parcel.readInt(),
             parcel.readInt()) {
     }
@@ -18,6 +19,7 @@ data class DrawingInfo(val directoryCode: Int, val name: String, val path: Strin
         parcel.writeString(name)
         parcel.writeString(path)
         parcel.writeLong(size)
+        parcel.writeString(checksum)
         parcel.writeInt(width)
         parcel.writeInt(height)
     }

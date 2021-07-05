@@ -1,11 +1,13 @@
 package com.divyanshu.draw.model
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Log
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Log
 import java.io.*
+import java.security.MessageDigest
 import java.util.concurrent.Executors
 
 class DrawingViewModel(private val filepath: String?): ViewModel() {
@@ -66,13 +68,45 @@ class DrawingViewModel(private val filepath: String?): ViewModel() {
         // Get image size in byte.
         val size: Long = File(drawingInfo.path).length()
 
+        val checksum = checksumInBase64(drawingInfo.path)
+
         return DrawingInfo(
                 drawingInfo.directoryCode,
                 drawingInfo.name,
                 drawingInfo.path,
                 size,
+                checksum,
                 imageWidth,
                 imageHeight
         )
+    }
+
+    @Throws(Exception::class)
+    private fun createChecksum(path: String): ByteArray {
+        var fis: InputStream? = null
+        return try {
+            fis = FileInputStream(path)
+            val buffer = ByteArray(8*1024)
+            val complete: MessageDigest = MessageDigest.getInstance("MD5")
+            var numRead: Int
+            while (fis.read(buffer).also { numRead = it } != -1) {
+                if (numRead > 0) {
+                    complete.update(buffer, 0, numRead)
+                }
+            }
+            complete.digest()
+        } finally {
+            fis?.close()
+        }
+    }
+
+    private fun checksumInBase64(path: String): String? {
+        return try {
+            val b = createChecksum(path)
+            Base64.encodeToString(b, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            Log.e(TAG, "", e)
+            null
+        }
     }
 }
