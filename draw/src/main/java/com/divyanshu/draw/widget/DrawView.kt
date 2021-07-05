@@ -230,11 +230,19 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return Bitmap.createBitmap(masterBitmap, 0, 0, masterBitmap.width, masterBitmap.height, matrix, true)
     }
 
-    fun getRotatedBitmapIfModified(): Bitmap? {
+    fun isModified(): Boolean {
         if (mPaths.isEmpty()) {
+            return false
+        } else {
+            return true
+        }
+    }
+
+    fun getRotatedBitmapIfModified(): Bitmap? {
+        if (!isModified()) {
             return null
         }
-        
+
         var bitmap = getBitmap()
         return bitmap
     }
@@ -264,10 +272,15 @@ class DrawView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 }
             }
 
-            if (mCroppedBackgroundBitmap != null) {
+            // https://stackoverflow.com/questions/44595529/smart-cast-to-type-is-impossible-because-variable-is-a-mutable-property-tha
+            // Smart cast to 'Bitmap' is impossible, because 'mCroppedBackgroundBitmap' is a mutable property that could have been changed by this time
+
+            val croppedBackgroundBitmap = mCroppedBackgroundBitmap
+
+            if (croppedBackgroundBitmap != null) {
                 // Reset alpha value.
                 mPaint.alpha = 255
-                canvas.drawBitmap(mCroppedBackgroundBitmap, 0f, 0f, mPaint)
+                canvas.drawBitmap(croppedBackgroundBitmap, 0f, 0f, mPaint)
             }
         }
 
